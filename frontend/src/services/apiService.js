@@ -1,6 +1,7 @@
 // API Service connecting frontend with all backend endpoints for TOURTEC India
 
-const API_BASE = '/api';
+const _apiHost = import.meta.env.VITE_API_URL ? `https://${import.meta.env.VITE_API_URL}` : '';
+const API_BASE = `${_apiHost}/api`;
 
 export const apiService = {
   // 1. Health check

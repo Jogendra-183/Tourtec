@@ -38,7 +38,7 @@ import {
 import confetti from 'canvas-confetti';
 
 export const HotelBookingHub = () => {
-  const { currentDestination, ecoPoints, setEcoPoints } = useApp();
+  const { currentDestination, ecoPoints, setEcoPoints, requireAuth, currentUser } = useApp();
 
   const cityName = currentDestination.name.split(',')[0].trim();
   const [activeTab, setActiveTab] = useState('stays'); // 'stays' | 'dining' | 'budget_calculator'
@@ -89,8 +89,16 @@ export const HotelBookingHub = () => {
   });
 
   const handleOpenBookingModal = (hotel) => {
-    setSelectedHotelForBooking(hotel);
-    setConfirmedBookingPass(null);
+    requireAuth(() => {
+      setSelectedHotelForBooking(hotel);
+      setConfirmedBookingPass(null);
+      if (currentUser?.name) {
+        setGuestName(currentUser.name);
+      }
+      if (currentUser?.phone) {
+        setGuestPhone(currentUser.phone);
+      }
+    }, { message: 'Please sign in to book your hotel stay and claim instant pass discounts.' });
   };
 
   const handleConfirmReservation = (e) => {
@@ -100,46 +108,50 @@ export const HotelBookingHub = () => {
       return;
     }
 
-    setIsProcessingBooking(true);
-    setTimeout(() => {
-      setIsProcessingBooking(false);
-      const discountINR = useRewardPointsDiscount && ecoPoints >= 50 ? 150 : 0;
-      const finalPrice = Math.max(100, selectedHotelForBooking.priceINR - discountINR);
-      const bookingId = `IND-HTL-${Math.floor(100000 + Math.random() * 900000)}`;
+    requireAuth(() => {
+      setIsProcessingBooking(true);
+      setTimeout(() => {
+        setIsProcessingBooking(false);
+        const discountINR = useRewardPointsDiscount && ecoPoints >= 50 ? 150 : 0;
+        const finalPrice = Math.max(100, selectedHotelForBooking.priceINR - discountINR);
+        const bookingId = `IND-HTL-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      if (discountINR > 0) {
-        setEcoPoints(p => Math.max(0, p - 50));
-      } else {
-        setEcoPoints(p => p + 40);
-      }
+        if (discountINR > 0) {
+          setEcoPoints(p => Math.max(0, p - 50));
+        } else {
+          setEcoPoints(p => p + 40);
+        }
 
-      setConfirmedBookingPass({
-        bookingId,
-        hotelName: selectedHotelForBooking.name,
-        city: cityName,
-        guestName,
-        checkInDate,
-        checkOutDate,
-        guestsCount,
-        finalPrice,
-        discountApplied: discountINR,
-        amenities: selectedHotelForBooking.amenities
-      });
+        setConfirmedBookingPass({
+          bookingId,
+          hotelName: selectedHotelForBooking.name,
+          city: cityName,
+          guestName,
+          checkInDate,
+          checkOutDate,
+          guestsCount,
+          finalPrice,
+          discountApplied: discountINR,
+          amenities: selectedHotelForBooking.amenities
+        });
 
-      confetti({ particleCount: 70, spread: 80 });
-    }, 900);
+        confetti({ particleCount: 70, spread: 80 });
+      }, 900);
+    }, { message: 'Please sign in to confirm your hotel reservation.' });
   };
 
   const handleClaimFoodCoupon = (foodSpot) => {
-    setEcoPoints(p => Math.max(0, p - 30));
-    const couponCode = `FOOD-${cityName.toUpperCase().slice(0, 3)}-${Math.floor(1000 + Math.random() * 9000)}`;
-    setClaimedFoodVoucher({
-      spotName: foodSpot.name,
-      couponCode,
-      discount: 'Flat 15% OFF + Free Kulhad Chai',
-      validUntil: 'Valid for next 24 hours'
-    });
-    confetti({ particleCount: 50, spread: 60 });
+    requireAuth(() => {
+      setEcoPoints(p => Math.max(0, p - 30));
+      const couponCode = `FOOD-${cityName.toUpperCase().slice(0, 3)}-${Math.floor(1000 + Math.random() * 9000)}`;
+      setClaimedFoodVoucher({
+        spotName: foodSpot.name,
+        couponCode,
+        discount: 'Flat 15% OFF + Free Kulhad Chai',
+        validUntil: 'Valid for next 24 hours'
+      });
+      confetti({ particleCount: 50, spread: 60 });
+    }, { message: 'Please sign in to claim dining vouchers and food discounts.' });
   };
 
   // Sample Budget Estimator

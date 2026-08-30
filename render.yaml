@@ -13,23 +13,29 @@ services:
         fromDatabase:
           name: tourtec-db
           property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
       - key: FAST2SMS_API_KEY
         sync: false
+      - key: FRONTEND_URL
+        sync: false
 
-  # 2. Frontend React / Vite Web App
+  # 2. Frontend React / Vite Static Site
   - type: web
     name: tourtec-frontend
     env: static
     buildCommand: npm --prefix frontend install && npm --prefix frontend run build
     staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     envVars:
       - key: VITE_API_URL
         fromService:
           type: web
           name: tourtec-backend
           property: host
-      - key: VITE_GOOGLE_CLIENT_ID
-        value: 849997510284-lb00lknh9vfbhrhj2pfhmkiqr9qcdgei.apps.googleusercontent.com
 
 databases:
   # 3. PostgreSQL Database

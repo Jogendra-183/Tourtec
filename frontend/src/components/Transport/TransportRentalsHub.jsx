@@ -27,7 +27,7 @@ import {
 import confetti from 'canvas-confetti';
 
 export const TransportRentalsHub = () => {
-  const { currentDestination, ecoPoints, setEcoPoints } = useApp();
+  const { currentDestination, ecoPoints, setEcoPoints, requireAuth, currentUser } = useApp();
 
   const cityName = currentDestination.name.split(',')[0].trim();
   const [activeSection, setActiveSection] = useState('cabs'); // 'cabs' | 'buses' | 'agencies' | 'budget_estimator'
@@ -67,6 +67,15 @@ export const TransportRentalsHub = () => {
     ? rateInfo.local * tripDays
     : (estimatedKm * rateInfo.perKm) + (rateInfo.driver * tripDays);
 
+  const handleOpenCabBooking = (cab) => {
+    requireAuth(() => {
+      setSelectedCabForBooking(cab);
+      setConfirmedRentalPass(null);
+      if (currentUser?.name) setPassengerName(currentUser.name);
+      if (currentUser?.phone) setPassengerPhone(currentUser.phone);
+    }, { message: 'Please sign in to book cabs and private tourist vehicles.' });
+  };
+
   const handleConfirmRental = (e) => {
     if (e) e.preventDefault();
     if (!passengerName.trim() || !pickupLocation.trim()) {
@@ -74,34 +83,36 @@ export const TransportRentalsHub = () => {
       return;
     }
 
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      const discountINR = useEcoPointsDiscount && ecoPoints >= 50 ? 200 : 0;
-      const finalPrice = Math.max(100, selectedCabForBooking.localRate8hr80km - discountINR);
-      const rentalId = `IND-CAB-${Math.floor(100000 + Math.random() * 900000)}`;
+    requireAuth(() => {
+      setIsProcessing(true);
+      setTimeout(() => {
+        setIsProcessing(false);
+        const discountINR = useEcoPointsDiscount && ecoPoints >= 50 ? 200 : 0;
+        const finalPrice = Math.max(100, selectedCabForBooking.localRate8hr80km - discountINR);
+        const rentalId = `IND-CAB-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      if (discountINR > 0) {
-        setEcoPoints(p => Math.max(0, p - 50));
-      } else {
-        setEcoPoints(p => p + 30);
-      }
+        if (discountINR > 0) {
+          setEcoPoints(p => Math.max(0, p - 50));
+        } else {
+          setEcoPoints(p => p + 30);
+        }
 
-      setConfirmedRentalPass({
-        rentalId,
-        vehicleName: selectedCabForBooking.name,
-        city: cityName,
-        passengerName,
-        pickupLocation,
-        pickupDate,
-        pickupTime,
-        finalPrice,
-        discountApplied: discountINR,
-        driverContact: '+91 98765 12345 (Assigned upon dispatch)'
-      });
+        setConfirmedRentalPass({
+          rentalId,
+          vehicleName: selectedCabForBooking.name,
+          city: cityName,
+          passengerName,
+          pickupLocation,
+          pickupDate,
+          pickupTime,
+          finalPrice,
+          discountApplied: discountINR,
+          driverContact: '+91 98765 12345 (Assigned upon dispatch)'
+        });
 
-      confetti({ particleCount: 70, spread: 80 });
-    }, 900);
+        confetti({ particleCount: 70, spread: 80 });
+      }, 900);
+    }, { message: 'Please sign in to confirm your vehicle reservation.' });
   };
 
   return (
@@ -338,11 +349,8 @@ export const TransportRentalsHub = () => {
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[10px] text-emerald-700 font-bold">Free Cancellation</span>
                     <button
-                      onClick={() => {
-                        setSelectedCabForBooking(cab);
-                        setConfirmedRentalPass(null);
-                      }}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs rounded-xl shadow-sm transition active:scale-95 flex items-center gap-1"
+                      onClick={() => handleOpenCabBooking(cab)}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-black text-xs rounded-xl shadow-sm transition active:scale-95 flex items-center gap-1 cursor-pointer"
                     >
                       <QrCode className="w-3.5 h-3.5" />
                       <span>Reserve Cab Pass</span>

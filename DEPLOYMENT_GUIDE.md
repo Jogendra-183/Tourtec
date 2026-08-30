@@ -9,9 +9,9 @@ This guide provides step-by-step instructions to deploy the complete TOURTEC Ful
 | Component | Status | Verification Details |
 | :--- | :---: | :--- |
 | **Frontend Bundle (Vite + React)** | ✅ PASS | 0 Errors, dynamic `API_BASE` support, responsive layout |
-| **Backend API (Express.js)** | ✅ PASS | Health check `GET /api/health` ➔ 200 OK |
+| **Backend API (Express.js)** | ✅ PASS | Health check `GET /api/health` ➔ 200 OK, CORS, security headers |
 | **Database (PostgreSQL)** | ✅ PASS | Auto-schema migration, tables (`users`, `user_bookings`) |
-| **Google SSO (OAuth 2.0)** | ✅ PASS | Client ID configured, OpenSSH RSA 2048-bit key generation |
+| **Email/Password Auth** | ✅ PASS | Sign Up, Sign In, protected route guards |
 | **Deployment Configs** | ✅ PASS | `render.yaml`, `vercel.json`, `Dockerfile`, `docker-compose.yml` |
 
 ---
@@ -29,30 +29,32 @@ Render allows you to deploy the **Frontend, Backend, and PostgreSQL database** t
    * 🐘 **`tourtec-db`**: Free PostgreSQL Database
    * 🚀 **`tourtec-backend`**: Free Node.js Web Service
    * 🌐 **`tourtec-frontend`**: Free Static React Web App
-6. Click **Apply** ➔ Your live website will be up with HTTPS in ~3 minutes!
+6. **Set manual environment variables** (see table below).
+7. Click **Apply** ➔ Your live website will be up with HTTPS in ~3 minutes!
+
+### Manual Environment Variables (Set in Render Dashboard):
+
+| Variable | Service | Description |
+| :--- | :--- | :--- |
+| `FAST2SMS_API_KEY` | Backend | Your Fast2SMS Indian Gateway API Key (get from [fast2sms.com](https://www.fast2sms.com/)) |
+| `FRONTEND_URL` | Backend | Your frontend URL (e.g., `https://tourtec-frontend.onrender.com`) — set after first deploy |
+
+> **Note:** `DATABASE_URL`, `JWT_SECRET`, `NODE_ENV`, and `VITE_API_URL` are automatically configured by `render.yaml`.
 
 ---
 
-## 🌟 Method 2: Deploy on Vercel + Supabase (Fast & Popular)
+## 🌟 Method 2: Deploy on Vercel + Render
 
-### Step A: Deploy PostgreSQL on Supabase / Neon
-1. Go to 👉 **[supabase.com](https://supabase.com/)** (or [neon.tech](https://neon.tech/)) and create a free project.
-2. Copy your **Database Connection String** (`postgres://postgres.xxxx@aws-0.pooler.supabase.com:6543/postgres`).
+### Step A: Deploy Backend + PostgreSQL on Render
+1. Follow Method 1 steps 1-6 for backend and database only.
+2. Copy your deployed backend URL (e.g., `https://tourtec-backend.onrender.com`).
 
-### Step B: Deploy Backend on Render or Railway
-1. Create a Web Service for `backend/`.
-2. Add Environment Variables:
-   * `NODE_ENV` = `production`
-   * `DATABASE_URL` = `<your_supabase_connection_string>`
-3. Copy your deployed backend URL (e.g., `https://tourtec-api.onrender.com`).
-
-### Step C: Deploy Frontend on Vercel
+### Step B: Deploy Frontend on Vercel
 1. Go to 👉 **[vercel.com](https://vercel.com/)** ➔ **Add New Project**.
 2. Select your repository.
 3. Root Directory: `frontend`
 4. Add Environment Variables:
-   * `VITE_API_URL` = `https://tourtec-api.onrender.com`
-   * `VITE_GOOGLE_CLIENT_ID` = `849997510284-lb00lknh9vfbhrhj2pfhmkiqr9qcdgei.apps.googleusercontent.com`
+   * `VITE_API_URL` = `tourtec-backend.onrender.com` (without `https://`)
 5. Click **Deploy**!
 
 ---
@@ -66,10 +68,15 @@ For deploying on AWS EC2, DigitalOcean Droplet, GCP Compute Engine, or Railway:
 git clone <your-repo-url>
 cd TOURTEC
 
-# 2. Build and start containers
-docker compose up -d --build
+# 2. Create a .env file with your secrets
+echo "FAST2SMS_API_KEY=your_key_here" > .env
+echo "POSTGRES_PASSWORD=your_secure_password" >> .env
+echo "JWT_SECRET=$(openssl rand -hex 32)" >> .env
 
-# 3. View logs
+# 3. Build and start containers
+docker compose --env-file .env up -d --build
+
+# 4. View logs
 docker compose logs -f
 ```
 
@@ -83,6 +90,18 @@ Your app will be running at **`http://<your-server-ip>:5000`** with PostgreSQL a
 | :--- | :--- | :--- |
 | `DATABASE_URL` | Backend | PostgreSQL connection string (`postgres://user:pass@host:port/db`) |
 | `PORT` | Backend | Server port (Default: `5000`) |
-| `VITE_API_URL` | Frontend | Backend API URL (Leave blank for same-domain hosting) |
-| `VITE_GOOGLE_CLIENT_ID` | Frontend | Google OAuth Client ID for Single Sign-On |
+| `NODE_ENV` | Backend | `production` for live deployments |
+| `JWT_SECRET` | Backend | Secret key for JWT token signing (auto-generated on Render) |
+| `FRONTEND_URL` | Backend | Production frontend URL for CORS (e.g., `https://tourtec-frontend.onrender.com`) |
 | `FAST2SMS_API_KEY` | Backend | Fast2SMS Indian Gateway API Key (Optional) |
+| `VITE_API_URL` | Frontend | Backend host (without `https://`), e.g., `tourtec-backend.onrender.com` |
+
+---
+
+## 🔒 Security Notes
+
+- **Never commit `.env` files to Git.** The `.gitignore` excludes them.
+- **Rotate API keys** if they were ever exposed in Git history.
+- The backend uses **HMAC-SHA256** signed JWTs with a server-side secret.
+- In production, CORS is restricted to the configured `FRONTEND_URL`.
+- Security headers (`X-Content-Type-Options`, `X-Frame-Options`, `HSTS`) are set automatically.

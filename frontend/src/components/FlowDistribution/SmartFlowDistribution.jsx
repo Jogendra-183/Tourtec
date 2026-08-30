@@ -18,7 +18,7 @@ import {
 import confetti from 'canvas-confetti';
 
 export const SmartFlowDistribution = () => {
-  const { currentDestination, setEcoPoints } = useApp();
+  const { currentDestination, setEcoPoints, requireAuth } = useApp();
   const [claimedVouchers, setClaimedVouchers] = useState({});
   const [activeModalVoucher, setActiveModalVoucher] = useState(null);
 
@@ -31,15 +31,17 @@ export const SmartFlowDistribution = () => {
   );
 
   const handleClaimFastPass = (voucher) => {
-    setClaimedVouchers(prev => ({ ...prev, [voucher.id]: true }));
-    setEcoPoints(p => p + (voucher.rewardPoints || 50));
-    setActiveModalVoucher(voucher);
+    requireAuth(() => {
+      setClaimedVouchers(prev => ({ ...prev, [voucher.id]: true }));
+      setEcoPoints(p => p + (voucher.rewardPoints || 50));
+      setActiveModalVoucher(voucher);
 
-    confetti({
-      particleCount: 70,
-      spread: 80,
-      origin: { y: 0.6 }
-    });
+      confetti({
+        particleCount: 70,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+    }, { message: 'Please sign in to claim VIP FastPass temple vouchers and bonus points.' });
   };
 
   return (

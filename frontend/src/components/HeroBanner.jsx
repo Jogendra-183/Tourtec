@@ -200,11 +200,27 @@ export const HeroBanner = () => {
 
           </div>
 
-          {/* Active Synced Location Tag */}
-          <div className="mt-3 flex items-center gap-2 text-xs font-bold text-slate-600">
-            <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
-            <span>Active Destination:</span>
-            <strong className="text-blue-700 font-black font-heritage">{globalPlace.name}</strong>
+          {/* Active Synced Location Tag & Quick Pills */}
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs font-bold text-slate-600">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
+              <span>Active Destination:</span>
+              <strong className="text-blue-700 font-black">{globalPlace.name}</strong>
+            </div>
+
+            {/* Quick Explore Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto max-w-full py-1">
+              {['Varanasi', 'Jaipur', 'Hyderabad', 'Goa', 'Kerala', 'Agra', 'Ladakh'].map((city) => (
+                <button
+                  key={city}
+                  type="button"
+                  onClick={() => searchAndSetGlobalPlace(city)}
+                  className="px-2.5 py-1 rounded-full bg-white/80 hover:bg-white text-slate-700 hover:text-blue-700 text-[11px] font-bold shadow-xs border border-slate-200/80 transition active:scale-95 cursor-pointer whitespace-nowrap"
+                >
+                  📍 {city}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

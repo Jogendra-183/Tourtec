@@ -4,7 +4,7 @@ import { apiService } from '../../services/apiService';
 import { AlertOctagon, PhoneCall, Radio, ShieldCheck, X, CheckCircle, MapPin, Activity, ShieldAlert, HeartHandshake } from 'lucide-react';
 
 export const SosModal = () => {
-  const { isSosOpen, setIsSosOpen, userLocation, selectedDestinationId, currentDestination, sosState, setSosState } = useApp();
+  const { isSosOpen, setIsSosOpen, userLocation, selectedDestinationId, currentDestination, sosState, setSosState, requireAuth } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(180);
 
@@ -19,24 +19,26 @@ export const SosModal = () => {
   if (!isSosOpen) return null;
 
   const handleTriggerSOS = async (reason = 'Medical / Lost in Narrow Galis') => {
-    setIsSubmitting(true);
-    const res = await apiService.sendSos({
-      touristId: 'TOURIST-INDIA-01',
-      coordinates: userLocation,
-      destinationId: selectedDestinationId,
-      reason
-    });
-
-    setIsSubmitting(false);
-    if (res && res.success) {
-      setSosState({
-        active: true,
-        dispatchId: res.dispatchId,
-        officer: res.assignedOfficer,
-        contact: res.rangerContact,
-        eta: res.etaRanger
+    requireAuth(async () => {
+      setIsSubmitting(true);
+      const res = await apiService.sendSos({
+        touristId: 'TOURIST-INDIA-01',
+        coordinates: userLocation,
+        destinationId: selectedDestinationId,
+        reason
       });
-    }
+
+      setIsSubmitting(false);
+      if (res && res.success) {
+        setSosState({
+          active: true,
+          dispatchId: res.dispatchId,
+          officer: res.assignedOfficer,
+          contact: res.rangerContact,
+          eta: res.etaRanger
+        });
+      }
+    }, { message: 'Please sign in to transmit verified live SOS emergency beacons to tourist police.' });
   };
 
   const handleCancelSOS = () => {

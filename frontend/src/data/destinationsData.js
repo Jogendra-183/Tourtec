@@ -582,5 +582,254 @@ export const DESTINATIONS = [
         tips: 'Listen to the deep resonant monastic horn calls (Dungchen) echoing across the valley.'
       }
     ]
+  },
+  {
+    id: 'hyderabad',
+    name: 'Hyderabad (City of Pearls & Nizams), Telangana',
+    country: 'India',
+    flag: '🇮🇳',
+    center: [17.3850, 78.4867],
+    zoom: 13,
+    tagline: 'Charminar, Historic Fortresses, Giant Buddha & Authentic Biryani',
+    heroImage: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?q=80&w=1200&auto=format&fit=crop',
+    weather: { temp: '32°C', condition: 'Sunny & Warm', humidity: '42%', aqi: '45 (Moderate)' },
+    stats: { totalVisitorsToday: 62400, capacityUtilization: 76, ecoPointsEarned: 26500 },
+    zones: [
+      { id: 'hz1', name: 'Charminar & Laad Bazaar Pearl Market', lat: 17.3616, lng: 78.4747, capacity: 7000, currentVisitors: 6400, densityPercent: 91, status: 'overcrowded', waitTime: '45 mins', category: 'Historic Monument', ecoRewardTokens: 0, description: 'Iconic 1591 landmark with four grand arches and bustling bazaars.' },
+      { id: 'hz2', name: 'Golconda Fort Acoustic Ramparts', lat: 17.3833, lng: 78.4011, capacity: 5500, currentVisitors: 4100, densityPercent: 75, status: 'heavy', waitTime: '30 mins', category: 'Medieval Fortress', ecoRewardTokens: 10, description: 'Famous for acoustic architectural brilliance and evening light-and-sound shows.' },
+      { id: 'hz3', name: 'Salar Jung Museum & Art Galleries', lat: 17.3713, lng: 78.4804, capacity: 4000, currentVisitors: 1500, densityPercent: 38, status: 'optimal', waitTime: '5 mins', category: 'National Art Museum', ecoRewardTokens: 30, description: 'One of the world’s largest one-man art collections including the musical clock.' },
+      { id: 'hz4', name: 'Hussain Sagar Lake & Monolithic Buddha', lat: 17.4239, lng: 78.4738, capacity: 4500, currentVisitors: 1800, densityPercent: 40, status: 'optimal', waitTime: '10 mins', category: 'Island Sanctuary', ecoRewardTokens: 25, description: 'Scenic lakefront with an 18-meter monolithic white granite Buddha statue.' },
+      { id: 'hz5', name: 'Birla Mandir White Marble Temple', lat: 17.4062, lng: 78.4691, capacity: 3000, currentVisitors: 720, densityPercent: 24, status: 'recommended', waitTime: '0 mins', category: 'Hilltop Marble Temple', ecoRewardTokens: 45, description: 'Tranquil white Rajasthani marble temple overlooking Hussain Sagar.' }
+    ],
+    roadmap: [
+      {
+        id: 'hm1',
+        title: 'Charminar & Nimrah Irani Chai Morning',
+        fromLocation: 'Origin: Hyderabad Deccan / Hotel',
+        toLocation: 'Charminar Pedestrian Plaza',
+        time: '08:30 AM',
+        status: 'completed',
+        duration: '1h 30m',
+        lat: 17.3616,
+        lng: 78.4747,
+        distanceKm: 0.0,
+        travelTime: 'Starting Point',
+        recommendedTransport: 'Hyderabad Metro (Green Line)',
+        recommendedFare: '₹25',
+        transportIcon: '🚊',
+        transitOptions: [
+          { mode: 'metro', title: 'Hyderabad Metro', fare: '₹25', time: '12 mins', icon: '🚊', badge: 'Fast & AC', steps: 'Take metro to MGBS station, walk 800m through Old City arcade' },
+          { mode: 'auto', title: 'Auto-Rickshaw / Rapido', fare: '₹40', time: '10 mins', icon: '🛺', badge: 'Direct', steps: 'Direct drop at Charminar pedestrian plaza' }
+        ],
+        directionsGuide: 'Arrive at Charminar plaza ➔ Climb the spiral stone staircase for Old City views ➔ Enjoy hot Irani chai & Osmania biscuits at Nimrah.',
+        tips: 'Visit early to enjoy peaceful heritage architecture and fresh morning bakery aroma.'
+      },
+      {
+        id: 'hm2',
+        title: 'Salar Jung Museum Heritage Collections',
+        fromLocation: 'Charminar Pedestrian Plaza',
+        toLocation: 'Salar Jung Museum Main Gate',
+        time: '11:00 AM',
+        status: 'in-progress',
+        duration: '2 hours',
+        lat: 17.3713,
+        lng: 78.4804,
+        distanceKm: 1.8,
+        travelTime: '8 mins ride',
+        recommendedTransport: 'E-Auto / Short Ride',
+        recommendedFare: '₹30',
+        transportIcon: '🛺',
+        transitOptions: [
+          { mode: 'auto', title: 'Electric Auto', fare: '₹30', time: '8 mins', icon: '🛺', badge: 'Recommended', steps: 'Drive north along the Musi riverbank directly to the museum gate' }
+        ],
+        directionsGuide: 'Drive along Musi riverbank road ➔ Enter Salar Jung Museum ➔ Witness the 19th-century musical clock chime at noon.',
+        tips: 'Do not miss the Veiled Rebecca Italian marble statue and the royal Nizam jade collection.'
+      },
+      {
+        id: 'hm3',
+        title: 'Hussain Sagar Lake Speedboat to Buddha Island',
+        fromLocation: 'Salar Jung Museum',
+        toLocation: 'Lumbini Park Jetty & Buddha Island',
+        time: '03:00 PM',
+        status: 'upcoming',
+        duration: '1h 30m',
+        lat: 17.4239,
+        lng: 78.4738,
+        distanceKm: 6.4,
+        travelTime: '18 mins ride',
+        recommendedTransport: 'Tourism Speedboat / Cab',
+        recommendedFare: '₹60 / ₹120',
+        transportIcon: '🛥️',
+        transitOptions: [
+          { mode: 'boat', title: 'Telangana Tourism Speedboat', fare: '₹60', time: '10 mins', icon: '🛥️', badge: 'Lake Cruise', steps: 'Board boat at Lumbini Park Jetty directly to Rock Island Buddha Statue' }
+        ],
+        directionsGuide: 'Arrive at Lumbini Park ➔ Board eco-speedboat to Rock Island in the heart of Hussain Sagar lake.',
+        tips: 'Great cool breeze in the afternoon with panoramic city skyline views.'
+      },
+      {
+        id: 'hm4',
+        title: 'Birla Mandir Sunset Panorama',
+        fromLocation: 'Lumbini Park Jetty',
+        toLocation: 'Birla Mandir Hilltop Arch',
+        time: '05:30 PM',
+        status: 'upcoming',
+        duration: '1 hour',
+        lat: 17.4062,
+        lng: 78.4691,
+        distanceKm: 2.5,
+        travelTime: '8 mins ride',
+        recommendedTransport: 'Hill Auto-Rickshaw',
+        recommendedFare: '₹35',
+        transportIcon: '🛺',
+        transitOptions: [
+          { mode: 'auto', title: 'Hill Auto', fare: '₹35', time: '8 mins', icon: '🛺', badge: 'Quick', steps: 'Direct uphill drop at Birla Mandir entrance arch' }
+        ],
+        directionsGuide: 'Climb the gentle marble steps of Naubat Pahad ➔ Enjoy serene quiet and golden sunset reflections over the lake.',
+        tips: 'Pure white marble temple with no electrical bells, maintaining serene meditative silence.'
+      },
+      {
+        id: 'hm5',
+        title: 'Golconda Fort Acoustic & Light Show',
+        fromLocation: 'Birla Mandir',
+        toLocation: 'Golconda Fort Sound & Light Arena',
+        time: '07:00 PM',
+        status: 'upcoming',
+        duration: '1h 45m',
+        lat: 17.3833,
+        lng: 78.4011,
+        distanceKm: 9.8,
+        travelTime: '22 mins drive',
+        recommendedTransport: 'AC Tourist Cab',
+        recommendedFare: '₹180',
+        transportIcon: '🚕',
+        transitOptions: [
+          { mode: 'cab', title: 'AC City Cab', fare: '₹180', time: '22 mins', icon: '🚕', badge: 'Recommended', steps: 'Via Mehdipatnam Flyover directly to Fort entrance' }
+        ],
+        directionsGuide: 'Drive via expressway to Golconda Fort ➔ Test the clapping acoustic signal at Fateh Darwaza ➔ Watch the dramatic evening historical show.',
+        tips: 'Pre-book VIP tickets for front-row seats at the sound and light narration by Amitabh Bachchan.'
+      }
+    ]
+  },
+  {
+    id: 'kerala',
+    name: 'Kerala God\'s Own Country Coastal Corridor',
+    country: 'India',
+    flag: '🇮🇳',
+    center: [9.9312, 76.2673],
+    zoom: 13,
+    tagline: 'Kochi Heritage, Alleppey Houseboats & Munnar Tea Estates',
+    heroImage: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=1200&auto=format&fit=crop',
+    weather: { temp: '28°C', condition: 'Tropical Breeze', humidity: '72%', aqi: '15 (Pristine)' },
+    stats: { totalVisitorsToday: 42100, capacityUtilization: 62, ecoPointsEarned: 29400 },
+    zones: [
+      { id: 'kz1', name: 'Fort Kochi Chinese Fishing Nets', lat: 9.9674, lng: 76.2431, capacity: 5000, currentVisitors: 3200, densityPercent: 64, status: 'optimal', waitTime: '10 mins', category: 'Coastal Heritage', ecoRewardTokens: 20, description: 'Historic 14th-century cantilevered fishing nets silhouetted against the Arabian Sea.' },
+      { id: 'kz2', name: 'Mattancherry Dutch Palace & Jew Town', lat: 9.9582, lng: 76.2592, capacity: 3500, currentVisitors: 2100, densityPercent: 60, status: 'optimal', waitTime: '15 mins', category: 'Colonial Museum & Spice Street', ecoRewardTokens: 25, description: 'Centuries-old spice warehouses, antique shops, and 1568 Paradesi Synagogue.' },
+      { id: 'kz3', name: 'Alleppey Backwaters Houseboat Pier', lat: 9.4981, lng: 76.3388, capacity: 6000, currentVisitors: 5100, densityPercent: 85, status: 'heavy', waitTime: '30 mins', category: 'Backwaters Canal', ecoRewardTokens: 10, description: 'Serene palm-fringed lagoons, traditional Kettuvallam houseboats, and village paddy fields.' }
+    ],
+    roadmap: [
+      {
+        id: 'km1',
+        title: 'Fort Kochi Beach & Chinese Fishing Nets Sunrise',
+        fromLocation: 'Origin: Ernakulam / Hotel',
+        toLocation: 'Fort Kochi Sea Walkway',
+        time: '07:30 AM',
+        status: 'completed',
+        duration: '1h 30m',
+        lat: 9.9674,
+        lng: 76.2431,
+        distanceKm: 0.0,
+        travelTime: 'Starting Point',
+        recommendedTransport: 'Kochi Water Metro Ferry',
+        recommendedFare: '₹20',
+        transportIcon: '🛥️',
+        transitOptions: [
+          { mode: 'boat', title: 'Kochi Water Metro (Electric)', fare: '₹20', time: '15 mins', icon: '🛥️', badge: 'Scenic & Eco', steps: 'Board state-of-the-art electric water metro at High Court Jetty directly to Fort Kochi' }
+        ],
+        directionsGuide: 'Take the scenic Water Metro to Fort Kochi ➔ Stroll along Vasco da Gama Square to watch fishermen operate the giant wooden cantilever nets.',
+        tips: 'Try fresh coconut water from local stalls and watch fishermen pull in morning catches.'
+      },
+      {
+        id: 'km2',
+        title: 'Jew Town & Paradesi Synagogue Heritage Walk',
+        fromLocation: 'Fort Kochi Walkway',
+        toLocation: 'Mattancherry Jew Town Street',
+        time: '10:30 AM',
+        status: 'in-progress',
+        duration: '2 hours',
+        lat: 9.9582,
+        lng: 76.2592,
+        distanceKm: 3.2,
+        travelTime: '10 mins ride',
+        recommendedTransport: 'Heritage Auto-Rickshaw',
+        recommendedFare: '₹40',
+        transportIcon: '🛺',
+        transitOptions: [
+          { mode: 'auto', title: 'Kochi Tuk-Tuk', fare: '₹40', time: '10 mins', icon: '🛺', badge: 'Heritage Ride', steps: 'Drive through spice-scented lanes of Mattancherry to Jew Town' }
+        ],
+        directionsGuide: 'Stroll through cobblestone lanes filled with ginger, cardamom, and antique brass wares ➔ Visit the historic 1568 Synagogue with hand-painted Chinese willow tiles.',
+        tips: 'Visit ginger warehouses and traditional Ayurvedic oil dispensaries.'
+      }
+    ]
+  },
+  {
+    id: 'delhi',
+    name: 'Delhi Capital Heritage & Modern Cultural Corridor',
+    country: 'India',
+    flag: '🇮🇳',
+    center: [28.6139, 77.2090],
+    zoom: 13,
+    tagline: 'India Gate, Red Fort, Qutub Minar & Historic Chandni Chowk',
+    heroImage: 'https://images.unsplash.com/photo-1587474260584-136574528ed5?q=80&w=1200&auto=format&fit=crop',
+    weather: { temp: '30°C', condition: 'Sunny & Clear', humidity: '40%', aqi: '58 (Moderate)' },
+    stats: { totalVisitorsToday: 82000, capacityUtilization: 82, ecoPointsEarned: 31000 },
+    zones: [
+      { id: 'dz1', name: 'India Gate & Kartavya Path', lat: 28.6129, lng: 77.2295, capacity: 8000, currentVisitors: 6200, densityPercent: 78, status: 'heavy', waitTime: '20 mins', category: 'National Memorial', ecoRewardTokens: 10, description: 'Monumental 42-meter high war memorial arch with sprawling lawns.' },
+      { id: 'dz2', name: 'Red Fort (Lal Qila) & Chandni Chowk', lat: 28.6562, lng: 77.2410, capacity: 7500, currentVisitors: 6800, densityPercent: 90, status: 'overcrowded', waitTime: '45 mins', category: 'UNESCO Fortress', ecoRewardTokens: 0, description: '17th-century Mughal imperial palace complex made of red sandstone.' },
+      { id: 'dz3', name: 'Qutub Minar & Mehrauli Archaeological Park', lat: 28.5244, lng: 77.1855, capacity: 4500, currentVisitors: 2200, densityPercent: 49, status: 'optimal', waitTime: '10 mins', category: 'UNESCO Victory Tower', ecoRewardTokens: 25, description: 'World’s tallest brick minaret standing 72.5 meters tall with ancient iron pillar.' }
+    ],
+    roadmap: [
+      {
+        id: 'dm1',
+        title: 'India Gate & Kartavya Path Morning Stroll',
+        fromLocation: 'Origin: New Delhi Station / Hotel',
+        toLocation: 'India Gate Memorial Plaza',
+        time: '07:30 AM',
+        status: 'completed',
+        duration: '1h 30m',
+        lat: 28.6129,
+        lng: 77.2295,
+        distanceKm: 0.0,
+        travelTime: 'Starting Point',
+        recommendedTransport: 'Delhi Metro (Violet/Yellow Line)',
+        recommendedFare: '₹20',
+        transportIcon: '🚊',
+        transitOptions: [
+          { mode: 'metro', title: 'Delhi Metro', fare: '₹20', time: '10 mins', icon: '🚊', badge: 'Fast & AC', steps: 'Take metro to Central Secretariat Station, walk 400m along tree-lined Kartavya Path' }
+        ],
+        directionsGuide: 'Walk along the grand central promenade of Kartavya Path ➔ View the eternal flame (Amar Jawan Jyoti) and lush gardens.',
+        tips: 'Visit in the early morning for quiet photography before tourist rush.'
+      },
+      {
+        id: 'dm2',
+        title: 'Qutub Minar Complex & Iron Pillar',
+        fromLocation: 'India Gate',
+        toLocation: 'Qutub Minar Complex Gate',
+        time: '11:00 AM',
+        status: 'in-progress',
+        duration: '2 hours',
+        lat: 28.5244,
+        lng: 77.1855,
+        distanceKm: 12.5,
+        travelTime: '22 mins ride',
+        recommendedTransport: 'Delhi Metro Yellow Line',
+        recommendedFare: '₹30',
+        transportIcon: '🚊',
+        transitOptions: [
+          { mode: 'metro', title: 'Yellow Line Metro', fare: '₹30', time: '20 mins', icon: '🚊', badge: 'Recommended', steps: 'Direct Yellow Line metro from Central Secretariat to Qutab Minar Station' }
+        ],
+        directionsGuide: 'Take Yellow Line Metro directly to Qutab Minar station ➔ Explore the 12th-century victory tower and the rust-resistant 1,600-year-old Iron Pillar.',
+        tips: 'Look closely at the intricate Arabic calligraphy carvings on the fluted red sandstone balconies.'
+      }
+    ]
   }
 ];

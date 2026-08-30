@@ -47,7 +47,8 @@ export const DynamicRoadmap = () => {
     updateMilestoneStatus,
     reorderMilestones,
     userLocation,
-    setEcoPoints
+    setEcoPoints,
+    requireAuth
   } = useApp();
 
   const [roadmapViewMode, setRoadmapViewMode] = useState('itinerary'); // 'itinerary' | 'route_finder'
@@ -63,21 +64,23 @@ export const DynamicRoadmap = () => {
 
   // 1-Click AI Route Reorder
   const handleDynamicRecalculate = async () => {
-    setIsOptimizing(true);
-    setOptimizationMessage(null);
+    requireAuth(async () => {
+      setIsOptimizing(true);
+      setOptimizationMessage(null);
 
-    const res = await apiService.optimizeRoadmap(currentDestination.id, activeStops);
+      const res = await apiService.optimizeRoadmap(currentDestination.id, activeStops);
 
-    setTimeout(() => {
-      setIsOptimizing(false);
-      if (res && res.optimizedSequence) {
-        reorderMilestones(res.optimizedSequence);
-      }
-      setEcoPoints(p => p + 35);
-      setOptimizationMessage(res?.message || '✨ Trip Plan Reorganized! We adjusted stop times to bypass long temple lines (+₹35 Eco-Points).');
+      setTimeout(() => {
+        setIsOptimizing(false);
+        if (res && res.optimizedSequence) {
+          reorderMilestones(res.optimizedSequence);
+        }
+        setEcoPoints(p => p + 35);
+        setOptimizationMessage(res?.message || '✨ Trip Plan Reorganized! We adjusted stop times to bypass long temple lines (+₹35 Eco-Points).');
 
-      confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
-    }, 1000);
+        confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+      }, 1000);
+    }, { message: 'Please sign in to dynamically recalculate and optimize your transit route.' });
   };
 
   const handleOpenGoogleMaps = (lat, lng, title) => {
@@ -152,8 +155,8 @@ export const DynamicRoadmap = () => {
 
           <button
             type="button"
-            onClick={() => setShowPassModal(true)}
-            className="px-3.5 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+            onClick={() => requireAuth(() => setShowPassModal(true), { message: 'Please sign in to generate and export your RFID & QR Travel Pass.' })}
+            className="px-3.5 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
             <QrCode className="w-3.5 h-3.5" />
             <span>Show QR Pass</span>

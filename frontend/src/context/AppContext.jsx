@@ -3,18 +3,39 @@ import { DESTINATIONS } from '../data/destinationsData';
 import { apiService } from '../services/apiService';
 import { discoverNearbyAttractions } from '../services/cityExplorerService';
 import confetti from 'canvas-confetti';
+import {
+  getTravelProfile,
+  setTravelProfile,
+  getStoredTrip,
+  setStoredTrip,
+  DEMO_SAMPLE_TRIP,
+  sendMessageToAI,
+  optimizeTripBudget,
+  optimizeFullTripItinerary,
+  findSmartTourDestination,
+  convertAiTripToRoadmap,
+  buildContextualPrompt
+} from '../adapters/smartTourAdapter';
+import { TRANSLATIONS, SUPPORTED_LANGUAGES } from '../services/languageService';
 
 const AppContext = createContext();
 
-import { TRANSLATIONS, SUPPORTED_LANGUAGES } from '../services/languageService';
-
 export const AppProvider = ({ children }) => {
-  const [selectedDestinationId, setSelectedDestinationId] = useState('varanasi');
-  const [activeTab, setActiveTab] = useState('roadmap'); // 'roadmap' | 'digitalTwin' | 'flow' | 'alerts' | 'assistant'
+  const initialProfile = getTravelProfile();
+  const initialDestQuery = (initialProfile?.destination || 'Hyderabad').toLowerCase().trim();
+  const initialMatchedDest = DESTINATIONS.find(d => 
+    d.id.toLowerCase() === initialDestQuery ||
+    d.name.toLowerCase().includes(initialDestQuery) ||
+    initialDestQuery.includes(d.id.toLowerCase())
+  ) || DESTINATIONS.find(d => d.id === 'hyderabad') || DESTINATIONS[0];
+
+  const [selectedDestinationId, setSelectedDestinationId] = useState(initialMatchedDest.id);
+  const [activeTab, setActiveTab] = useState('home'); // 'home' | 'destinations' | 'explore' | 'roadmap' | 'assistant' | 'hotels' | 'rentals' | 'digitalTwin' | 'flow' | 'safety'
   const [destinations, setDestinations] = useState(DESTINATIONS);
   
   // Multilingual State
   const [language, setLanguage] = useState('en');
+  const [currency, setCurrency] = useState('INR');
 
   const t = useCallback((key) => {
     return TRANSLATIONS[language]?.[key] || TRANSLATIONS.en[key] || key;
@@ -25,13 +46,15 @@ export const AppProvider = ({ children }) => {
 
   // Universal Global Searched Place (Controls the ENTIRE website)
   const [globalPlace, setGlobalPlace] = useState({
+    id: baseDestination.id,
     name: baseDestination.name,
-    shortName: baseDestination.name.split(' ')[0],
+    shortName: baseDestination.name.split(',')[0].split(' ')[0],
     flag: '🇮🇳',
     center: baseDestination.center,
     zoom: baseDestination.zoom || 14,
     tagline: baseDestination.tagline,
     spots: baseDestination.roadmap,
+    roadmap: baseDestination.roadmap,
     zones: baseDestination.zones,
     weather: baseDestination.weather,
     stats: baseDestination.stats
@@ -45,6 +68,37 @@ export const AppProvider = ({ children }) => {
     lng: baseDestination.center[1],
     landmark: baseDestination.zones[1]?.name || 'Current Landmark'
   });
+
+  // Global live user GPS location
+  const [globalUserLocation, setGlobalUserLocation] = useState(() => {
+    try {
+      const saved = localStorage.getItem('smarttour_user_gps');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: Math.round(pos.coords.accuracy),
+            timestamp: new Date().toISOString()
+          };
+          setGlobalUserLocation(loc);
+          try {
+            localStorage.setItem('smarttour_user_gps', JSON.stringify(loc));
+          } catch {}
+        },
+        (err) => console.log('GPS note:', err.message),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 5000 }
+      );
+    }
+  }, []);
   
   // Authentication & User Profile State
   const [currentUser, setCurrentUser] = useState(() => {
@@ -55,22 +109,65 @@ export const AppProvider = ({ children }) => {
     return null;
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('signup'); // 'signup' | 'signin'
+  const [authMode, setAuthMode] = useState('signin'); // 'signin' | 'signup'
+  const [authNoticeMessage, setAuthNoticeMessage] = useState('');
+  const [pendingAuthAction, setPendingAuthAction] = useState(null);
+
+  // Authentication Route / Feature Guard Helper
+  const requireAuth = useCallback((actionCallback, options = {}) => {
+    if (currentUser) {
+      if (typeof actionCallback === 'function') {
+        actionCallback();
+      }
+      return true;
+    }
+
+    // Save pending action to auto-resume upon login
+    setPendingAuthAction({
+      callback: typeof actionCallback === 'function' ? actionCallback : null,
+      tab: options.tab || null,
+      message: options.message || 'Please sign in to continue.'
+    });
+    setAuthNoticeMessage(options.message || 'Please sign in to continue.');
+    setAuthMode('signin');
+    setIsAuthModalOpen(true);
+    return false;
+  }, [currentUser]);
 
   const loginUser = (userData) => {
     const user = {
       ...userData,
-      id: `usr_${Date.now()}`,
+      id: userData?.id || `usr_${Date.now()}`,
       joinedAt: new Date().toLocaleDateString()
     };
     setCurrentUser(user);
     localStorage.setItem('tourtec_user', JSON.stringify(user));
     earnReward('Welcome Bonus for Account Registration', 100, '🎁');
+
+    // Auto-resume protected action if user was attempting one
+    if (pendingAuthAction) {
+      if (pendingAuthAction.tab) {
+        setActiveTab(pendingAuthAction.tab);
+      }
+      if (pendingAuthAction.callback) {
+        try {
+          setTimeout(() => {
+            pendingAuthAction.callback();
+          }, 100);
+        } catch (e) {
+          console.warn('Resumed auth action note:', e);
+        }
+      }
+      setPendingAuthAction(null);
+      setAuthNoticeMessage('');
+    }
   };
 
   const logoutUser = () => {
     setCurrentUser(null);
     localStorage.removeItem('tourtec_user');
+    setPendingAuthAction(null);
+    setAuthNoticeMessage('');
   };
 
   const [ecoPoints, setEcoPoints] = useState(275);
@@ -85,6 +182,43 @@ export const AppProvider = ({ children }) => {
   const [sosState, setSosState] = useState({ active: false, dispatchId: null, officer: null });
   const [alerts, setAlerts] = useState([]);
   const [telemetry, setTelemetry] = useState(null);
+
+  // -------------------------------------------------------------
+  // SmartTourAI State & Data Models
+  // -------------------------------------------------------------
+  const [travelProfile, setTravelProfileState] = useState(() => getTravelProfile());
+  const [currentTrip, setCurrentTrip] = useState(() => getStoredTrip() || DEMO_SAMPLE_TRIP);
+  const [trackMateDestination, setTrackMateDestination] = useState(undefined);
+  const [showPrefModal, setShowPrefModal] = useState(false);
+
+  // Sidebar collapse state (persisted)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('smarttour_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('smarttour_sidebar_collapsed', String(isSidebarCollapsed));
+    } catch {}
+  }, [isSidebarCollapsed]);
+
+  // Floating AI Assistant Drawer
+  const [isFloatingAiOpen, setIsFloatingAiOpen] = useState(false);
+  const [floatingAiInitialQuery, setFloatingAiInitialQuery] = useState('');
+
+  // Initial Chat Messages
+  const [messages, setMessages] = useState([
+    {
+      id: 'init-1',
+      role: 'ASSISTANT',
+      content: `Namaste! 🙏 Welcome to **SmartTour AI** — India's Premier AI Tourism, Itinerary Planning & Safety Assistant.\n\nI can help you:\n- 🏰 **Plan customized multi-day itineraries** across Jaipur, Agra, Goa, Kerala, Varanasi, Hyderabad, and Ladakh.\n- 🗺️ **Explore verified tourist attractions** with live timings, entry fees in multiple currencies, and accessibility details.\n- 🛡️ **Monitor real-time tourist safety advisories** and emergency helplines.\n\nWhere would you like to travel in India?`,
+      createdAt: new Date().toISOString()
+    }
+  ]);
 
   const earnReward = (title, points, icon = '✨') => {
     setEcoPoints(p => p + points);
@@ -106,15 +240,6 @@ export const AppProvider = ({ children }) => {
     confetti({ particleCount: 70, spread: 80 });
     return { success: true, code: voucherCode };
   };
-  
-  // Roadmaps map
-  const [roadmaps, setRoadmaps] = useState(() => {
-    const map = {};
-    DESTINATIONS.forEach(d => {
-      map[d.id] = d.roadmap;
-    });
-    return map;
-  });
 
   // Global Search Function that sets the place across ALL pages
   const searchAndSetGlobalPlace = async (placeQuery) => {
@@ -122,6 +247,40 @@ export const AppProvider = ({ children }) => {
 
     setIsGlobalSearching(true);
     try {
+      const q = placeQuery.toLowerCase().trim();
+      const matched = destinations.find(d => 
+        d.id.toLowerCase() === q ||
+        d.name.toLowerCase().includes(q) ||
+        q.includes(d.id.toLowerCase())
+      );
+
+      if (matched) {
+        setSelectedDestinationId(matched.id);
+        const cityName = matched.shortName || matched.name.split(',')[0].split(' ')[0];
+        const newGlobalPlace = {
+          id: matched.id,
+          name: matched.name,
+          shortName: cityName,
+          flag: matched.flag || '🇮🇳',
+          center: matched.center,
+          zoom: matched.zoom || 13,
+          tagline: matched.tagline,
+          spots: matched.roadmap,
+          roadmap: matched.roadmap,
+          zones: matched.zones,
+          weather: matched.weather,
+          stats: matched.stats
+        };
+        setGlobalPlace(newGlobalPlace);
+        setUserLocation({
+          lat: matched.center[0],
+          lng: matched.center[1],
+          landmark: matched.roadmap?.[0]?.title || matched.zones?.[0]?.name || cityName
+        });
+        confetti({ particleCount: 50, spread: 65 });
+        return;
+      }
+
       const data = await discoverNearbyAttractions(placeQuery);
       if (data && data.spots && data.spots.length > 0) {
         const cityName = data.name.split(',')[0];
@@ -193,12 +352,6 @@ export const AppProvider = ({ children }) => {
           landmark: formattedRoadmap[0]?.title || cityName
         });
 
-        // Set matching destination id if one matches
-        const matched = destinations.find(d => d.id === placeQuery.toLowerCase().trim());
-        if (matched) {
-          setSelectedDestinationId(matched.id);
-        }
-
         confetti({ particleCount: 50, spread: 65 });
       }
     } catch (err) {
@@ -237,8 +390,8 @@ export const AppProvider = ({ children }) => {
   const updateMilestoneStatus = (milestoneId, newStatus) => {
     setGlobalPlace(prev => ({
       ...prev,
-      spots: prev.spots.map(s => s.id === milestoneId ? { ...s, status: newStatus } : s),
-      roadmap: prev.roadmap.map(s => s.id === milestoneId ? { ...s, status: newStatus } : s)
+      spots: (prev.spots || []).map(s => s.id === milestoneId ? { ...s, status: newStatus } : s),
+      roadmap: (prev.roadmap || []).map(s => s.id === milestoneId ? { ...s, status: newStatus } : s)
     }));
   };
 
@@ -251,6 +404,90 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
+  // -------------------------------------------------------------
+  // Bridge Methods for AI Assistant & Trip Planning
+  // -------------------------------------------------------------
+  const askSmartTourAi = async (promptText, options = {}) => {
+    const { switchToChat = true, contextPrefix = '' } = options;
+    const finalPrompt = contextPrefix ? `${contextPrefix}\n${promptText}` : promptText;
+
+    if (switchToChat) {
+      setActiveTab('assistant');
+    }
+
+    const userMsg = {
+      id: 'msg-' + Date.now(),
+      role: 'USER',
+      content: promptText,
+      createdAt: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    try {
+      const response = await sendMessageToAI(
+        finalPrompt,
+        undefined,
+        undefined,
+        undefined,
+        language,
+        travelProfile
+      );
+
+      const aiMsg = {
+        id: 'msg-ai-' + Date.now(),
+        role: 'ASSISTANT',
+        content: response.message,
+        structuredResponse: response,
+        language: response.language,
+        createdAt: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, aiMsg]);
+
+      if (response.trip) {
+        setCurrentTrip(response.trip);
+        setStoredTrip(response.trip);
+      }
+      return response;
+    } catch (err) {
+      console.error('SmartTour AI Assistant error:', err);
+    }
+  };
+
+  const planTripForDestination = async (destName, stateName) => {
+    const targetCity = destName || globalPlace.shortName || 'Varanasi';
+    const prompt = `Please create a customized multi-day itinerary for ${targetCity}${stateName ? `, ${stateName}` : ''} with top attractions, budget estimation, local transport, and accessibility status.`;
+    
+    // Set destination in state
+    searchAndSetGlobalPlace(targetCity);
+    return askSmartTourAi(prompt, { switchToChat: true });
+  };
+
+  const handleProfileSave = (profile, generatedTrip) => {
+    setTravelProfileState(profile);
+    setTravelProfile(profile);
+    if (profile?.destination) {
+      searchAndSetGlobalPlace(profile.destination);
+    }
+    if (generatedTrip) {
+      setCurrentTrip(generatedTrip);
+      setStoredTrip(generatedTrip);
+      const convertedRoadmap = convertAiTripToRoadmap(generatedTrip);
+      if (convertedRoadmap && convertedRoadmap.length > 0) {
+        setGlobalPlace(prev => ({
+          ...prev,
+          spots: convertedRoadmap,
+          roadmap: convertedRoadmap
+        }));
+      }
+      setActiveTab('roadmap');
+    }
+  };
+
+  const openExplore = (destName) => {
+    setTrackMateDestination(destName || globalPlace.shortName);
+    setActiveTab('explore');
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -258,13 +495,14 @@ export const AppProvider = ({ children }) => {
         setSelectedDestinationId,
         activeTab,
         setActiveTab,
-        currentDestination: globalPlace, // All components reading currentDestination get the global searched place!
+        currentDestination: globalPlace,
         globalPlace,
         searchAndSetGlobalPlace,
         isGlobalSearching,
         destinations,
         userLocation,
         setUserLocation,
+        globalUserLocation,
         ecoPoints,
         setEcoPoints,
         isRewardsWalletOpen,
@@ -284,6 +522,8 @@ export const AppProvider = ({ children }) => {
         reorderMilestones,
         language,
         setLanguage,
+        currency,
+        setCurrency,
         t,
         SUPPORTED_LANGUAGES,
         currentUser,
@@ -291,8 +531,37 @@ export const AppProvider = ({ children }) => {
         setIsAuthModalOpen,
         authMode,
         setAuthMode,
+        authNoticeMessage,
+        setAuthNoticeMessage,
+        pendingAuthAction,
+        setPendingAuthAction,
+        requireAuth,
         loginUser,
-        logoutUser
+        logoutUser,
+
+        // SmartTourAI State & Context
+        travelProfile,
+        setTravelProfileState,
+        handleProfileSave,
+        currentTrip,
+        setCurrentTrip,
+        messages,
+        setMessages,
+        trackMateDestination,
+        setTrackMateDestination,
+        showPrefModal,
+        setShowPrefModal,
+        isSidebarCollapsed,
+        setIsSidebarCollapsed,
+        isFloatingAiOpen,
+        setIsFloatingAiOpen,
+        floatingAiInitialQuery,
+        setFloatingAiInitialQuery,
+
+        // Bridge Methods
+        askSmartTourAi,
+        planTripForDestination,
+        openExplore
       }}
     >
       {children}

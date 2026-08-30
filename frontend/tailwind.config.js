@@ -19,11 +19,32 @@ export default {
           danger: '#EF4444'
         }
       },
+      spacing: {
+        'sidebar': '280px',
+        'sidebar-collapsed': '72px',
+      },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'ping-slow': 'ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite',
-        'bounce-subtle': 'bounce 2s infinite'
-      }
+        'bounce-subtle': 'bounce 2s infinite',
+        'fadeIn': 'fadeIn 0.3s ease-out forwards',
+        'slideInLeft': 'slideInLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'slideUp': 'slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideInLeft: {
+          '0%': { opacity: '0', transform: 'translateX(-24px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
     },
   },
   plugins: [],

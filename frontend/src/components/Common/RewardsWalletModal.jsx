@@ -27,7 +27,8 @@ export const RewardsWalletModal = () => {
     setIsRewardsWalletOpen,
     rewardTransactions,
     earnReward,
-    redeemReward
+    redeemReward,
+    requireAuth
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('redeem'); // 'redeem' | 'earn' | 'history'
@@ -80,10 +81,12 @@ export const RewardsWalletModal = () => {
   ];
 
   const handleRedeemClick = (item) => {
-    const res = redeemReward(item);
-    if (res && res.success) {
-      setActiveRedeemedVoucher({ ...item, code: res.code });
-    }
+    requireAuth(() => {
+      const res = redeemReward(item);
+      if (res && res.success) {
+        setActiveRedeemedVoucher({ ...item, code: res.code });
+      }
+    }, { message: 'Please sign in to redeem travel rewards and coupons.' });
   };
 
   const handleCopyCode = (code) => {
