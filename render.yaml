@@ -41,5 +41,5 @@ databases:
   # 3. PostgreSQL Database
   - name: tourtec-db
     databaseName: tourtec_db
-    user: postgres
+    user: tourtec_user
     plan: free
